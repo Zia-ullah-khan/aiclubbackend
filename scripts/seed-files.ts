@@ -612,21 +612,20 @@ async function seedFiles(): Promise<void> {
 
         console.log(`Seeding files for user: ${user.username} (${user.email})`);
 
-        // User's storage directory
+        // User's storage directory (root, not projects subdir)
         const userRoot = path.join(config.localStorageRoot, 'users', user._id.toString());
-        const projectsDir = path.join(userRoot, 'projects');
 
-        // Create base directories
-        if (!fs.existsSync(projectsDir)) {
-            fs.mkdirSync(projectsDir, { recursive: true });
+        // Create base user directory
+        if (!fs.existsSync(userRoot)) {
+            fs.mkdirSync(userRoot, { recursive: true });
         }
 
-        // Create all folders and files
+        // Create all folders and files directly in user root
         for (const [folderPath, items] of Object.entries(FILE_SYSTEM)) {
             for (const item of items) {
                 const fullPath = folderPath
-                    ? path.join(projectsDir, folderPath, item.name)
-                    : path.join(projectsDir, item.name);
+                    ? path.join(userRoot, folderPath, item.name)
+                    : path.join(userRoot, item.name);
 
                 if (item.type === 'folder') {
                     if (!fs.existsSync(fullPath)) {
@@ -647,7 +646,7 @@ async function seedFiles(): Promise<void> {
         }
 
         console.log('\n✅ Sample files seeded successfully!');
-        console.log(`📂 Files located at: ${projectsDir}`);
+        console.log(`📂 Files located at: ${userRoot}`);
 
         await mongoose.disconnect();
     } catch (error) {
